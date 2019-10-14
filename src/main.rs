@@ -14,7 +14,7 @@ use game::Game;
 use point::Point;
 use set::{Direction, Set, SetIter};
 
-const DESIRED_SCORE: usize = 13;
+const DESIRED_SCORE: usize = 12;
 
 fn main() {
     let game = Game::new();
@@ -32,11 +32,11 @@ fn main() {
             'd: for direction in DirectionIter::new() {
                 let set_start = step_1(point, direction.opposite());
                 let set = Set::new(set_start, direction);
-                // println!("    D: {:?} | ss: {} | s: {:?}", direction,  set_start, set);
+                println!("    D: {:?} | ss: {} | s: {:?}", direction,  set_start, set);
                 if game.valid_add_set(set) {
                     game.add_set(set);
                     let num_possible_moves = game.possible_moves();
-                    // println!("        pm: {}", num_possible_moves);
+                    println!("        pm: {}", num_possible_moves);
                     game.sets.pop();
                     game.points.remove(&set_start);
                     possible_moves.insert((num_possible_moves, set));
@@ -47,8 +47,9 @@ fn main() {
                 sorted_possible_moves.push(m);
                 sorted_possible_moves.sort_unstable_by(|(m1, _), (m2, _)| m1.cmp(m2));
             }
-            // println!("    Sorted possibilities: {:?}", sorted_possible_moves);
+            println!("    Sorted possibilities: {:?}", sorted_possible_moves);
             while let Some((_, set)) = sorted_possible_moves.pop() {
+
                 game.add_set(set);
                 if branch_highest(&mut game) {
                     break;
@@ -97,16 +98,19 @@ fn main() {
 // true => hit desired max - return with no further action
 // false => pop sets, remove set start
 fn branch_highest(game: &mut Game) -> bool {
-    // println!("    Begin branch");
+    println!("    Begin branch");
     // // println!("        points: {}", game.points.len());
     let mut possible_moves = HashSet::new();
     for point in game.points.clone().into_iter() {
+        println!("        Base point: {}", point);
         for direction in DirectionIter::new() {
             let set_start = step_1(point, direction.opposite());
             let set = Set::new(set_start, direction);
+            println!("            D: {:?} | ss: {} | s: {:?}", direction,  set_start, set);
             if game.valid_add_set(set) {
                 game.add_set(set);
                 let num_possible_moves = game.possible_moves();
+                println!("                pm: {}", num_possible_moves);
                 possible_moves.insert((num_possible_moves, set));
                 game.sets.pop();
                 game.points.remove(&set_start);
@@ -118,7 +122,7 @@ fn branch_highest(game: &mut Game) -> bool {
         sorted_possible_moves.push(m);
         sorted_possible_moves.sort_unstable_by(|(m1, _), (m2, _)| m1.cmp(m2));
     }
-    // println!("        Sorted possibilities: {:?}", sorted_possible_moves);
+    println!("        Sorted possibilities: {:?}", sorted_possible_moves);
     while let Some((_, set)) = sorted_possible_moves.pop() {
         game.add_set(set);
         if game.score() >= DESIRED_SCORE {

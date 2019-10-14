@@ -4,67 +4,19 @@ use std::ops::Range;
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
 pub enum Direction {
-    N,
-    NE,
-    E,
-    SE,
-    S,
-    SW,
-    W,
-    NW
+    H,
+    V,
+    SP,
+    SN
 }
 
 impl Direction {
-    pub fn parallel_to(&self, other: Direction) -> bool {
-        match (self, other) {
-            (Direction::N,  Direction::N)  | (Direction::N,  Direction::S)  => true,
-            (Direction::NE, Direction::NE) | (Direction::NE, Direction::SW) => true,
-            (Direction::E,  Direction::E)  | (Direction::E,  Direction::W)  => true,
-            (Direction::SE, Direction::SE) | (Direction::SE, Direction::NW) => true,
-            (Direction::S,  Direction::S)  | (Direction::S,  Direction::N)  => true,
-            (Direction::SW, Direction::SW) | (Direction::SW, Direction::NE) => true,
-            (Direction::W,  Direction::W)  | (Direction::W,  Direction::E)  => true,
-            (Direction::NW, Direction::NW) | (Direction::NW, Direction::SE) => true,
-            _ => false
-        }
-    }
-
-    pub fn rot_90_acw(&self) -> Self {
+    pub fn rot_90(&self) -> Self {
         match self {
-            Direction::N  => Direction::W,
-            Direction::NE => Direction::NW,
-            Direction::E  => Direction::N,
-            Direction::SE => Direction::NE,
-            Direction::S  => Direction::E,
-            Direction::SW => Direction::SE,
-            Direction::W  => Direction::S,
-            Direction::NW => Direction::SW
-        }
-    }
-
-    pub fn rot_90_cw(&self) -> Self {
-        match self {
-            Direction::N  => Direction::E,
-            Direction::NE => Direction::SE,
-            Direction::E  => Direction::S,
-            Direction::SE => Direction::SW,
-            Direction::S  => Direction::W,
-            Direction::SW => Direction::NW,
-            Direction::W  => Direction::N,
-            Direction::NW => Direction::NE
-        }
-    }
-
-    pub fn opposite(&self) -> Self {
-        match self {
-            Direction::N  => Direction::S,
-            Direction::NE => Direction::SW,
-            Direction::E  => Direction::W,
-            Direction::SE => Direction::NW,
-            Direction::S  => Direction::N,
-            Direction::SW => Direction::NE,
-            Direction::W  => Direction::E,
-            Direction::NW => Direction::SE
+            Direction::H => Direction::V,
+            Direction::V => Direction::H,
+            Direction::SP => Direction::SN,
+            Direction::SN => Direction::SP
         }
     }
 }
@@ -94,31 +46,6 @@ impl Set {
 
     pub fn start_point(&self) -> Point {
         Point::new(self.start_x, self.start_y)
-    }
-
-    pub fn ranges(&self) -> [Range<i32>; 2] {
-        match self.direction {
-            Direction::N => [self.start_x..self.start_x, self.start_y..self.start_y + 5],
-            Direction::NE => [
-                self.start_x..self.start_x + 5,
-                self.start_y..self.start_y + 5,
-            ],
-            Direction::E => [self.start_x..self.start_x + 5, self.start_y..self.start_y],
-            Direction::SE => [
-                self.start_x..self.start_x + 5,
-                self.start_y..self.start_y - 5,
-            ],
-            Direction::S => [self.start_x..self.start_x, self.start_y..self.start_y - 5],
-            Direction::SW => [
-                self.start_x..self.start_x - 5,
-                self.start_y..self.start_y - 5,
-            ],
-            Direction::W => [self.start_x..self.start_x - 5, self.start_y..self.start_y],
-            Direction::NW => [
-                self.start_x..self.start_x - 5,
-                self.start_y..self.start_y + 5,
-            ]
-        }
     }
 
     pub fn acceptable_overlap(&self, other: Set) -> bool {
@@ -152,14 +79,10 @@ impl Set {
 
     pub fn iter(&self) -> SetIter {
         let (dx, dy) = match self.direction {
-            Direction::N  => ( 0,  1),
-            Direction::NE => ( 1,  1),
-            Direction::E  => ( 1,  0),
-            Direction::SE => ( 1, -1),
-            Direction::S  => ( 0, -1),
-            Direction::SW => (-1, -1),
-            Direction::W  => (-1,  0),
-            Direction::NW => (-1,  1)
+            Direction::H  => ( 1,  0),
+            Direction::V  => ( 0,  1),
+            Direction::SP => ( 1,  1),
+            Direction::SN => ( 1, -1)
         };
         SetIter {
             x: self.start_x,

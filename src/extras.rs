@@ -51,3 +51,21 @@ pub fn step_1(point: Point, direction: Direction) -> Point {
     };
     Point::new(point.x + diff_x, point.y + diff_y)
 }
+
+/*#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
+pub struct Connections {
+    n: bool,
+    ne: bool,
+    e: bool,
+    se: bool,
+    s: bool,
+    sw: bool,
+    w: bool,
+    nw: bool
+}
+
+impl Connections {
+    pub fn new(d: Direction) -> Self {
+
+    }
+}*/

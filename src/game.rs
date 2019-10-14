@@ -1,3 +1,4 @@
+use crate::extras::{DirectionIter, step_1};
 use crate::point::Point;
 use crate::set::{Direction, Set};
 use std::collections::HashSet;
@@ -59,33 +60,53 @@ impl Game {
         }
     }
 
-    pub fn add_set(&mut self, set: Set) {
-        println!("        Adding {:?}", set);
-        self.points.insert(set.start_point());
+    pub fn add_set(&mut self, set: Set) -> bool {
+        // println!("            Adding {:?}", set);
         self.sets.push(set);
+        self.points.insert(set.start_point())
     }
 
     pub fn valid_add_set(&self, test: Set) -> bool {
-        let mut contained = 0;
-        for point in test.iter().skip(1) {
-            // println!("    Contains {}? {}", point, self.points.contains(&point));
-            if self.points.contains(&point) {
-                contained += 1;
-            }
-        }
-        // println!("    Set contains {} points of requisite 4", contained);
-        if contained == 4 {
-            for &set in &self.sets {
-                if !test.acceptable_overlap(set) {
-                    // println!("    {:?} overlaps {:?}", test, set);
+        let mut points_iter = test.iter();
+        if self.points.contains(&points_iter.next().unwrap()) {
+            false
+        } else {
+            for _ in 0..4 {
+                if !self.points.contains(&points_iter.next().unwrap()) {
                     return false;
                 }
             }
-            println!("    Sets ({}): {:?}", self.sets.len(), self.sets);
+            for &set in &self.sets {
+                if !test.acceptable_overlap(set) {
+                    // // println!("    {:?} overlaps {:?}", test, set);
+                    return false;
+                }
+            }
             true
-        } else {
-            false
         }
+    }
+
+    pub fn possible_moves(&self) -> usize {
+        let mut counter = 0;
+        for &point in self.points.iter() {
+            for direction in DirectionIter::new() {
+                let set_start = step_1(point, direction.opposite());
+                let set = Set::new(set_start, direction);
+                if self.valid_add_set(set) {
+                    counter += 1;
+                }
+            }
+        }
+        counter
+    }
+
+    pub fn has_possible_set(&self, point: Point) -> bool {
+        for direction in DirectionIter::new() {
+            if self.valid_add_set(Set::new(point, direction)) {
+                return true;
+            }
+        }
+        false
     }
 
     pub fn reset(&mut self) {

@@ -2,7 +2,7 @@ use crate::point::Point;
 use std::iter::Iterator;
 use std::ops::Range;
 
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
 pub enum Direction {
     N,
     NE,
@@ -28,9 +28,48 @@ impl Direction {
             _ => false
         }
     }
+
+    pub fn rot_90_acw(&self) -> Self {
+        match self {
+            Direction::N  => Direction::W,
+            Direction::NE => Direction::NW,
+            Direction::E  => Direction::N,
+            Direction::SE => Direction::NE,
+            Direction::S  => Direction::E,
+            Direction::SW => Direction::SE,
+            Direction::W  => Direction::S,
+            Direction::NW => Direction::SW
+        }
+    }
+
+    pub fn rot_90_cw(&self) -> Self {
+        match self {
+            Direction::N  => Direction::E,
+            Direction::NE => Direction::SE,
+            Direction::E  => Direction::S,
+            Direction::SE => Direction::SW,
+            Direction::S  => Direction::W,
+            Direction::SW => Direction::NW,
+            Direction::W  => Direction::N,
+            Direction::NW => Direction::NE
+        }
+    }
+
+    pub fn opposite(&self) -> Self {
+        match self {
+            Direction::N  => Direction::S,
+            Direction::NE => Direction::SW,
+            Direction::E  => Direction::W,
+            Direction::SE => Direction::NW,
+            Direction::S  => Direction::N,
+            Direction::SW => Direction::NE,
+            Direction::W  => Direction::E,
+            Direction::NW => Direction::SE
+        }
+    }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
 // Specifies:
 // x range: [start_x, end_x)
 // y range: [start_y, end_y)
@@ -109,51 +148,6 @@ impl Set {
         } else {
             true
         }
-        /*if self.direction.parallel_to(other.direction) {
-            let [Range {
-                start: start_xs,
-                end: end_xs
-            }, Range {
-                start: start_ys,
-                end: end_ys
-            }] = self.ranges();
-            let [Range {
-                start: start_xo,
-                end: end_xo
-            }, Range {
-                start: start_yo,
-                end: end_yo
-            }] = other.ranges();
-            if self.direction == other.direction {
-                match self.direction {
-                    Direction::N | Direction::S => {
-                        start_xs != start_xo || end_ys == start_yo || end_yo == start_ys
-                    },
-                    Direction::E | Direction::W => {
-                        start_ys != start_yo || end_xs == start_xo || end_xo == start_xs
-                    },
-                    Direction::NE | Direction::SE | Direction::SW | Direction::NW => {
-                        start_xs - start_xo == start_ys - start_yo
-                            && ((start_xs - end_xo).abs() >= 5 || start_xs == end_xo)
-                    }
-                }
-            } else {
-                match self.direction {
-                    Direction::N | Direction::S => {
-                        start_xs != start_xo || start_ys == start_yo || end_ys == end_yo
-                    },
-                    Direction::E | Direction::W => {
-                        start_ys != start_yo || start_xs == start_xo || end_xs == end_xo
-                    },
-                    Direction::NE | Direction::SE | Direction::SW | Direction::NW => {
-                        start_xs - start_xo == start_ys - start_yo
-                            && (start_xs - end_xo).abs() >= 9 || start_xs == start_xo
-                    }
-                }
-            }
-        } else {
-            false
-        }*/
     }
 
     pub fn iter(&self) -> SetIter {

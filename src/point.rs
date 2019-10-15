@@ -1,3 +1,4 @@
+use crate::set::Direction;
 use std::fmt::{self, Display};
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
@@ -11,13 +12,23 @@ impl Point {
         Point { x, y }
     }
 
-    // (3, 0) =>
+    pub fn step(&self, direction: Direction) -> Self {
+        let Point { x, y } = self;
+        let (dx, dy) = direction.single_step();
+        Point::new(x + dx, y + dy)
+    }
+
+    pub fn step_opposite(&self, direction: Direction) -> Self {
+        let Point { x, y } = self;
+        let (dx, dy) = direction.opposite_single_step();
+        Point::new(x + dx, y + dy)
+    }
+
     pub fn rot_90_acw(&self) -> Self {
         let &Point { x, y } = self;
         Point::new(-y, x - 1)
     }
 
-    // (-2, 3) => (4, 2)
     pub fn rot_90_cw(&self) -> Self {
         let &Point { x, y } = self;
         Point::new(y + 1, -x)

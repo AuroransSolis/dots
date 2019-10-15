@@ -3,6 +3,11 @@ use std::iter::Iterator;
 use std::ops::Range;
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
+// Directions:
+//  V |  / SP
+//    .  _ H
+//
+//      \ SN
 pub enum Direction {
     H,
     V,
@@ -19,6 +24,24 @@ impl Direction {
             Direction::SN => Direction::SP
         }
     }
+
+    pub fn single_step(&self) -> (i32, i32) {
+        match self {
+            Direction::H => (1, 0),
+            Direction::V => (0, 1),
+            Direction::SP => (1, 1),
+            Direction::SN => (1, -1)
+        }
+    }
+
+    pub fn opposite_single_step(&self) -> (i32, i32) {
+        match self {
+            Direction::H => (-1, 0),
+            Direction::V => (0, -1),
+            Direction::SP => (-1, -1),
+            Direction::SN => (-1, 1)
+        }
+    }
 }
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
@@ -32,11 +55,14 @@ pub struct Set {
 }
 
 impl Set {
-    pub fn new(start: Point, direction: Direction) -> Self {
+    pub fn new(start: Point, direction: Direction, offset: i32) -> Self {
         let Point {
-            x: start_x,
-            y: start_y
+            x: mut start_x,
+            y: mut start_y
         } = start;
+        let (step_x, step_y) = direction.opposite_single_step();
+        start_x += step_x * offset;
+        start_y += step_y * offset;
         Set {
             start_x,
             start_y,
@@ -49,7 +75,7 @@ impl Set {
     }
 
     pub fn acceptable_overlap(&self, other: Set) -> bool {
-        if self.direction.parallel_to(other.direction) {
+        if self.direction == other.direction {
             // self points iter
             let mut spi = self.iter();
             let self_points = [
@@ -78,12 +104,7 @@ impl Set {
     }
 
     pub fn iter(&self) -> SetIter {
-        let (dx, dy) = match self.direction {
-            Direction::H  => ( 1,  0),
-            Direction::V  => ( 0,  1),
-            Direction::SP => ( 1,  1),
-            Direction::SN => ( 1, -1)
-        };
+        let (dx, dy) = self.direction.single_step();
         SetIter {
             x: self.start_x,
             y: self.start_y,

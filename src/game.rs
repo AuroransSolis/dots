@@ -39,7 +39,7 @@ const STARTING_POINTS: [Point; 36] = [
     Point { x:  2, y:  2 },
     Point { x:  2, y:  3 },
     Point { x:  2, y:  4 },
-    Point { x:  1, y:  4 },
+    Point { x:  1, y:  4 }
 ];
 
 #[derive(Clone, Debug)]
@@ -60,37 +60,47 @@ impl Game {
         }
     }
 
-    pub fn add_set(&mut self, set: Set) -> bool {
+    pub fn add_set(&mut self, set: Set, point: Point) -> bool {
         // println!("            Adding {:?}", set);
         self.sets.push(set);
-        self.points.insert(set.start_point())
+        self.points.insert(point)
     }
 
-    pub fn valid_add_set(&self, test: Set) -> bool {
-        let mut points_iter = test.iter();
-        if self.points.contains(&points_iter.next().unwrap()) {
+    pub fn valid_add_set(&self, test: Set, add_point: Point) -> bool {
+        if self.points.contains(&add_point) {
             false
         } else {
-            for _ in 0..4 {
-                if !self.points.contains(&points_iter.next().unwrap()) {
-                    return false;
+            let mut contains = 0;
+            for point in test.iter() {
+                if point == add_point {
+                    continue;
+                } else if self.points.contains(&point) {
+                    contains += 1;
                 }
             }
-            for &set in &self.sets {
-                if !test.acceptable_overlap(set) {
-                    // // println!("    {:?} overlaps {:?}", test, set);
-                    return false;
+            if contains == 4 {
+                for &set in &self.sets {
+                    if !test.acceptable_overlap(set) {
+                        return false
+                    }
                 }
+                true
+            } else {
+                false
             }
-            true
         }
     }
 
     pub fn possible_moves(&self) -> usize {
-        let mut counter = 0;
+        let mut moves = HashSet::new();
         for &point in self.points.iter() {
             for direction in DirectionIter::new() {
-                let set_start = step_1(point, direction.opposite());
+                for offset in 0..5 {
+                    let set = Set::new(point, direction, offset);
+                    if self.valid_add_set(set, point) {
+
+                    }
+                }
                 let set = Set::new(set_start, direction);
                 if self.valid_add_set(set) {
                     counter += 1;

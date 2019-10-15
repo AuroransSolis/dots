@@ -38,20 +38,6 @@ impl DirectionIter {
     }
 }
 
-pub fn step_1(point: Point, direction: Direction) -> Point {
-    let (diff_x, diff_y) = match direction {
-        Direction::N  => ( 0,  1),
-        Direction::NE => ( 1,  1),
-        Direction::E  => ( 1,  0),
-        Direction::SE => ( 1, -1),
-        Direction::S  => ( 0, -1),
-        Direction::SW => (-1, -1),
-        Direction::W  => (-1,  0),
-        Direction::NW => (-1,  1)
-    };
-    Point::new(point.x + diff_x, point.y + diff_y)
-}
-
 /*#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
 pub struct Connections {
     n: bool,

@@ -30,6 +30,14 @@ fn main() {
             let mut possible_moves = HashSet::new();
             // println!("    points: {}", game.points.len());
             'd: for direction in DirectionIter::new() {
+                for offset in 0..5 {
+                    let set = Set::new(point, direction, offset);
+                    if game.valid_add_set(set) {
+                        game.add_set(set);
+                        let num_possible_moves = game.possible_moves();
+                        game.sets.pop();
+                    }
+                }
                 let set_start = step_1(point, direction.opposite());
                 let set = Set::new(set_start, direction);
                 println!("    D: {:?} | ss: {} | s: {:?}", direction,  set_start, set);

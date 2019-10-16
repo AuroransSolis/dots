@@ -1,16 +1,11 @@
-use crate::point::Point;
 use crate::set::Direction;
 use std::iter::Iterator;
 
-const DIRECTIONS: [Direction; 8] = [
-    Direction::N,
-    Direction::NE,
-    Direction::E,
-    Direction::SE,
-    Direction::S,
-    Direction::SW,
-    Direction::W,
-    Direction::NW,
+const DIRECTIONS: [Direction; 4] = [
+    Direction::V,
+    Direction::SP,
+    Direction::H,
+    Direction::SN
 ];
 
 #[derive(Copy, Clone)]
@@ -22,7 +17,7 @@ impl Iterator for DirectionIter {
     type Item = Direction;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.d < 8 {
+        if self.d < 4 {
             let out = DIRECTIONS[self.d as usize];
             self.d += 1;
             Some(out)

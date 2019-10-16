@@ -1,6 +1,5 @@
 use crate::point::Point;
 use std::iter::Iterator;
-use std::ops::Range;
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
 // Directions:
@@ -16,15 +15,6 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn rot_90(&self) -> Self {
-        match self {
-            Direction::H => Direction::V,
-            Direction::V => Direction::H,
-            Direction::SP => Direction::SN,
-            Direction::SN => Direction::SP
-        }
-    }
-
     pub fn single_step(&self) -> (i32, i32) {
         match self {
             Direction::H => (1, 0),
@@ -70,36 +60,23 @@ impl Set {
         }
     }
 
-    pub fn start_point(&self) -> Point {
-        Point::new(self.start_x, self.start_y)
-    }
-
     pub fn acceptable_overlap(&self, other: Set) -> bool {
-        if self.direction == other.direction {
-            // self points iter
-            let mut spi = self.iter();
-            let self_points = [
-                spi.next().unwrap(),
-                spi.next().unwrap(),
-                spi.next().unwrap(),
-                spi.next().unwrap(),
-                spi.next().unwrap()
-            ];
-            // other points iter
-            let mut opi = other.iter();
-            let mut has_common = false;
-            for _ in 0..5 {
-                if self_points.contains(&opi.next().unwrap()) {
-                    if has_common {
-                        return false;
-                    } else {
-                        has_common = true;
-                    }
-                }
+        match (self.direction, other.direction) {
+            (Direction::V, Direction::V) => {
+                self.start_x != other.start_x || (self.start_y - other.start_y).abs() >= 4
+            },
+            (Direction::SP, Direction::SP) => {
+                self.start_x - other.start_x - self.start_y + other.start_y != 0
+                    || (self.start_x - other.start_x).abs() >= 4
+            },
+            (Direction::H, Direction::H) => {
+                self.start_y != other.start_y || (self.start_x - other.start_x).abs() >= 4
+            },
+            (Direction::SN, Direction::SN) => {
+                self.start_x - other.start_x + self.start_y - other.start_y != 0
+                    || (self.start_x - other.start_x).abs() >= 4
             }
-            true
-        } else {
-            true
+            _ => true
         }
     }
 

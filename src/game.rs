@@ -1,6 +1,6 @@
-use crate::extras::{DirectionIter, step_1};
+use crate::extras::DirectionIter;
 use crate::point::Point;
-use crate::set::{Direction, Set};
+use crate::set::Set;
 use std::collections::HashSet;
 
 const STARTING_POINTS: [Point; 36] = [
@@ -61,75 +61,57 @@ impl Game {
     }
 
     pub fn add_set(&mut self, set: Set, point: Point) -> bool {
-        // println!("            Adding {:?}", set);
         self.sets.push(set);
         self.points.insert(point)
     }
 
-    pub fn valid_add_set(&self, test: Set, add_point: Point) -> bool {
-        if self.points.contains(&add_point) {
-            false
-        } else {
-            let mut contains = 0;
-            for point in test.iter() {
-                if point == add_point {
-                    continue;
-                } else if self.points.contains(&point) {
-                    contains += 1;
-                }
-            }
-            if contains == 4 {
-                for &set in &self.sets {
-                    if !test.acceptable_overlap(set) {
-                        return false
-                    }
-                }
-                true
+    pub fn valid_add_set(&self, test: Set) -> Option<Point> {
+        // println!("vas");
+        let mut new = None;
+        for point in test.iter() {
+            // println!("  point: {}", point);
+            if self.points.contains(&point) {
+                // println!("    c");
+                continue;
+            } else if new.is_none() {
+                // println!("    first nc");
+                new = Some(point);
             } else {
-                false
+                // println!("    second nc");
+                return None;
             }
+        }
+        if new.is_some() {
+            for &set in &self.sets {
+                // println!("  {:?} overlaps with {:?}?", test, set);
+                if !test.acceptable_overlap(set) {
+                    // println!("    yes");
+                    return None;
+                }
+            }
+            new
+        } else {
+            None
         }
     }
 
     pub fn possible_moves(&self) -> usize {
+        // println!("Possible moves");
+        // println!("  points: {}", self.points.len());
         let mut moves = HashSet::new();
         for &point in self.points.iter() {
+            // println!("  Point: {}", point);
             for direction in DirectionIter::new() {
                 for offset in 0..5 {
                     let set = Set::new(point, direction, offset);
-                    if self.valid_add_set(set, point) {
-
+                    // println!("    Set: {:?}", set);
+                    if self.valid_add_set(set).is_some() {
+                        moves.insert(set);
                     }
                 }
-                let set = Set::new(set_start, direction);
-                if self.valid_add_set(set) {
-                    counter += 1;
-                }
             }
         }
-        counter
-    }
-
-    pub fn has_possible_set(&self, point: Point) -> bool {
-        for direction in DirectionIter::new() {
-            if self.valid_add_set(Set::new(point, direction)) {
-                return true;
-            }
-        }
-        false
-    }
-
-    pub fn reset(&mut self) {
-        self.points.clear();
-        for &point in STARTING_POINTS.iter() {
-            self.points.insert(point);
-        }
-    }
-
-    pub fn apply_current_sets(&mut self) {
-        for set in self.sets.iter() {
-            self.points.insert(set.start_point());
-        }
+        moves.len()
     }
 
     pub fn score(&self) -> usize {

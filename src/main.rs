@@ -14,7 +14,7 @@ use game::Game;
 use set::Set;
 use crate::point::Point;
 
-const DESIRED_SCORE: usize = 63;
+const DESIRED_SCORE: usize = 62;
 
 fn main() {
     let game = Game::new();
@@ -32,33 +32,33 @@ fn main() {
 }
 
 fn base_highest_set(game: &Game, point: Point) -> Game {
-    // println!("Base point: {}", point);
     let mut game = game.clone();
+    // Collect unique possible moves in this hashset
     let mut possible_moves = HashSet::new();
     for direction in DirectionIter::new() {
-        // println!("  direction: {:?}", direction);
         for offset in 0..5 {
-            // println!("    offset: {}", offset);
             let set = Set::new(point, direction, offset);
-            // println!("  set: {:?}", set);
+            print!("a");
             if let Some(point) = game.valid_add_set(Set::new(point, direction, offset)) {
                 game.add_set(set, point);
                 let num_possible_moves = game.possible_moves();
-                // println!("    valid set: {}", num_possible_moves);
                 possible_moves.insert((num_possible_moves, set, point));
                 game.sets.pop();
                 game.points.remove(&point);
             }
         }
     }
-    // println!("  Found {} moves.", possible_moves.len());
+    // Collect into a vec to sort
     let mut sorted_possible_moves = Vec::with_capacity(possible_moves.len());
     for m in possible_moves.into_iter() {
         sorted_possible_moves.push(m);
-        sorted_possible_moves.sort_unstable_by(|(m1, _, _), (m2, _, _)| m1.cmp(m2));
     }
-    // println!("  Sorted possibilities: {:?}", sorted_possible_moves);
+    // Sort by possible moves
+    sorted_possible_moves.sort_unstable_by(|(m1, _, _), (m2, _, _)| m1.cmp(m2));
     while let Some((_, set, point)) = sorted_possible_moves.pop() {
+        // Branch off into recursion-land for each possible move, and break out of the loop if one
+        // of the branches meets the required number of moves. Otherwise, if the branch returns and
+        // hasn't met the requested number of moves, undo the change made here and try again.
         game.add_set(set, point);
         if branch_highest_set(&mut game) {
             break;
@@ -73,21 +73,18 @@ fn base_highest_set(game: &Game, point: Point) -> Game {
 // Return value:
 // true => hit desired max - return with no further action
 // false => pop sets, remove set start
+// This thing is basically the same as the base function, except it takes a mutable reference to a
+// `Game` that it modifies, and returns a `bool` depending on whether it reached the target number
+// of moves. Literally identical otherwise.
 fn branch_highest_set(game: &mut Game) -> bool {
-    // println!("  Begin branch");
     let mut possible_moves = HashSet::new();
     for point in game.points.clone().into_iter() {
-        // println!("    Base point: {}", point);
         for direction in DirectionIter::new() {
-            // println!("        direction: {:?}", direction);
             for offset in 0..5 {
-                // println!("          offset: {}", offset);
                 let set = Set::new(point, direction, offset);
-                // println!("      set: {:?}", set);
                 if let Some(point) = game.valid_add_set(Set::new(point, direction, offset)) {
                     game.add_set(set, point);
                     let num_possible_moves = game.possible_moves();
-                    // println!("        valid set: {}", num_possible_moves);
                     possible_moves.insert((num_possible_moves, set, point));
                     game.sets.pop();
                     game.points.remove(&point);
@@ -98,9 +95,8 @@ fn branch_highest_set(game: &mut Game) -> bool {
     let mut sorted_possible_moves = Vec::with_capacity(possible_moves.len());
     for m in possible_moves.into_iter() {
         sorted_possible_moves.push(m);
-        sorted_possible_moves.sort_unstable_by(|(m1, _, _), (m2, _, _)| m1.cmp(m2));
     }
-    // println!("        Sorted possibilities: {:?}", sorted_possible_moves);
+    sorted_possible_moves.sort_unstable_by(|(m1, _, _), (m2, _, _)| m1.cmp(m2));
     while let Some((_, set, point)) = sorted_possible_moves.pop() {
         game.add_set(set, point);
         if game.score() >= DESIRED_SCORE {
@@ -113,44 +109,6 @@ fn branch_highest_set(game: &mut Game) -> bool {
             game.points.remove(&point);
         }
     }
+    // Ran out of moves to try, and we didn't reach the requisite number, so return `false`.
     false
 }
-
-// Return value:
-// true => hit desired max - return with no further action
-// false => pop sets, remove set start
-/*fn branch_highest_single(game: &mut Game) -> bool {
-    let mut possible_moves = HashSet::new();
-    for point in game.points.clone().into_iter() {
-        for direction in DirectionIter::new() {
-            for offset in 0..5 {
-                let set = Set::new(point, direction, offset);
-                if let Some(point) = game.valid_add_set(Set::new(point, direction, offset)) {
-                    game.add_set(set, point);
-                    let num_possible_moves = game.possible_moves();
-                    possible_moves.insert((num_possible_moves, set, point));
-                    game.sets.pop();
-                    game.points.remove(&point);
-                }
-            }
-        }
-    }
-    let mut sorted_possible_moves = Vec::with_capacity(possible_moves.len());
-    for m in possible_moves.into_iter() {
-        sorted_possible_moves.push(m);
-        sorted_possible_moves.sort_unstable_by(|(m1, _, _), (m2, _, _)| m1.cmp(m2));
-    }
-    while let Some((_, set, point)) = sorted_possible_moves.pop() {
-        game.add_set(set, point);
-        if game.score() >= DESIRED_SCORE {
-            return true;
-        }
-        if branch_highest_set(game) {
-            return true;
-        } else {
-            game.sets.pop();
-            game.points.remove(&point);
-        }
-    }
-    false
-}*/

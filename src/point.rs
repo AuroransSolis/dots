@@ -1,10 +1,10 @@
+use crate::set::Direction;
 use std::fmt::{self, Display};
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
 pub struct Point {
     pub(crate) x: i32,
-    pub(crate) y: i32,
-    pub(crate) connections: [bool; 8]
+    pub(crate) y: i32
 }
 
 impl Point {

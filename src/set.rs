@@ -32,6 +32,96 @@ impl Direction {
             Direction::SN => (-1, 1)
         }
     }
+
+    #[inline]
+    pub fn set_in_t_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b00000001,
+            Direction::SP => 0b00000010,
+            Direction::H => 0b00000100,
+            Direction::SN => 0b00001000
+        }
+    }
+
+    #[inline]
+    pub fn set_in_f_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b11111110,
+            Direction::SP => 0b11111101,
+            Direction::H => 0b11111011,
+            Direction::SN => 0b11110111
+        }
+    }
+
+    #[inline]
+    pub fn set_out_t_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b00010000,
+            Direction::SP => 0b00100000,
+            Direction::H => 0b01000000,
+            Direction::SN => 0b10000000
+        }
+    }
+
+    #[inline]
+    pub fn set_out_false_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b11101111,
+            Direction::SP => 0b11011111,
+            Direction::H => 0b10111111,
+            Direction::SN => 0b01111111
+        }
+    }
+
+    #[inline]
+    pub fn get_in_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b00000001,
+            Direction::SP => 0b00000010,
+            Direction::H => 0b00000100,
+            Direction::SN => 0b00001000
+        }
+    }
+
+    #[inline]
+    pub fn get_out_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b00010000,
+            Direction::SP => 0b00100000,
+            Direction::H => 0b01000000,
+            Direction::SN => 0b10000000
+        }
+    }
+
+    #[inline]
+    pub fn as_start_flags(self) -> u8 {
+        match self {
+            Direction::V => 0b00000001,
+            Direction::SP => 0b00000010,
+            Direction::H => 0b00000100,
+            Direction::SN => 0b00001000
+        }
+    }
+
+    #[inline]
+    pub fn as_mid_flags(self) -> u8 {
+        match self {
+            Direction::V => 0b00010001,
+            Direction::SP  => 0b00100010,
+            Direction::H => 0b01000100,
+            Direction::SN => 0b10001000
+        }
+    }
+
+    #[inline]
+    pub fn as_end_flags(self) -> u8 {
+        match self {
+            Direction::V => 0b00010000,
+            Direction::SP => 0b00100000,
+            Direction::H => 0b01000000,
+            Direction::SN => 0b10000000
+        }
+    }
 }
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
@@ -45,11 +135,8 @@ pub struct Set {
 }
 
 impl Set {
-    pub fn new(start: Point, direction: Direction, offset: i32) -> Self {
-        let Point {
-            x: mut start_x,
-            y: mut start_y
-        } = start;
+    pub fn new(start: (i32, i32), direction: Direction, offset: i32) -> Self {
+        let (start_x, start_y) = start;
         let (step_x, step_y) = direction.opposite_single_step();
         start_x += step_x * offset;
         start_y += step_y * offset;

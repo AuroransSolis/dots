@@ -147,6 +147,11 @@ impl Set {
     pub fn start_point(&self) -> Point {
         Point::new(self.start_x, self.start_y)
     }
+
+    pub fn end_point(&self) -> Point {
+        let (dx, dy) = self.direction.single_step();
+        Point::new(self.start_x + 5 * dx, self.start_y + 5 * dy)
+    }
 }
 
 #[derive(Copy, Clone)]

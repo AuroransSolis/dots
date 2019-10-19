@@ -1,6 +1,6 @@
 use crate::extras::DirectionIter;
 use crate::point::Point;
-use crate::set::{Direction, Set};
+use crate::set::Set;
 use std::collections::{HashMap, HashSet};
 
 const STARTING_POINTS: [Point; 36] = [
@@ -60,48 +60,6 @@ impl Game {
         }
     }
 
-    pub fn set_in(&mut self, point: Point, d: Direction, tf: bool) {
-        let flags = self.points.get_mut(&point).unwrap();
-        if tf {
-            *flags = *flags | d.set_in_t_mask();
-        } else {
-            *flags = *flags & d.set_in_f_mask();
-        }
-    }
-
-    pub fn set_out(&mut self, point: Point, d: Direction, tf: bool) {
-        let flags = self.points.get_mut(&point).unwrap();
-        if tf {
-            *flags = *flags | d.set_out_t_mask();
-        } else {
-            *flags = *flags & d.set_out_f_mask();
-        }
-    }
-
-    pub fn set_inout(&mut self, point: Point, d: Direction, tf: bool) {
-        let flags = self.points.get_mut(&point).unwrap();
-        if tf {
-            *flags = *flags | d.set_inout_t_mask();
-        } else {
-            *flags = *flags & d.set_inout_f_mask();
-        }
-    }
-
-    pub fn get_in(&self, point: Point, d: Direction) -> bool {
-        let flags = self.points.get(&point).unwrap();
-        *flags & d.get_in_mask() > 0
-    }
-
-    pub fn get_out(&self, point: Point, d: Direction) -> bool {
-        let flags = self.points.get(&point).unwrap();
-        *flags & d.get_out_mask() > 0
-    }
-
-    pub fn get_inout(&self, point: Point, d: Direction) -> bool {
-        let flags = self.points.get(&point).unwrap();
-        (*flags & d.get_inout_mask()).count_ones() == 2
-    }
-
     pub fn add_set(&mut self, set: Set, point: Point) {
         self.sets.push(set);
         self.points.insert(point, 0);
@@ -122,7 +80,7 @@ impl Game {
     }
 
     pub fn remove_set(&mut self, set: Set, point: Point) {
-        self.sets.push(set);
+        self.sets.pop();
         self.points.remove(&point);
         let masks = [
             set.direction.set_out_f_mask(),
@@ -144,10 +102,10 @@ impl Game {
         }
     }
 
-    pub fn valid_add_set(&self, test: Set) -> Option<(Point, u8)> {
+    pub fn valid_add_set(&self, test: Set) -> Option<Point> {
         let mut new = None;
-        let mut which = 6;
         let mut point = test.start_point();
+        let step = test.direction.single_step();
         let masks = [
             test.direction.get_out_mask(),
             test.direction.get_inout_mask(),
@@ -155,26 +113,30 @@ impl Game {
             test.direction.get_inout_mask(),
             test.direction.get_in_mask()
         ];
-        for (loc, &mask) in masks.iter().enumerate() {
+        for &mask in masks.iter() {
             if let Some(&flags) = self.points.get(&point) {
                 if flags & mask > 0 {
                     return None;
                 }
-            } else if which == 6 {
+            } else if new.is_none() {
                 new = Some(point);
-                which = loc as u8;
             } else {
                 return None;
             }
+            point.step(step);
         }
-        Some((new.unwrap(), which))
+        new
     }
 
     pub fn possible_moves(&self) -> usize {
         // println!("Possible moves");
         // println!("  points: {}", self.points.len());
         let mut moves = HashSet::new();
-        for &point in self.points.iter() {
+        for (&point, &flags) in self.points.iter() {
+            // Point has a set in all directions
+            if flags == 255 {
+                continue;
+            }
             // println!("  Point: {}", point);
             for direction in DirectionIter::new() {
                 for offset in 0..5 {

@@ -1,4 +1,3 @@
-use crate::set::Direction;
 use std::fmt::{self, Display};
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]

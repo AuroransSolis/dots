@@ -11,6 +11,11 @@ impl Point {
     pub fn new(x: i32, y: i32) -> Self {
         Point { x, y }
     }
+
+    pub fn step(&mut self, d: (i32, i32)) {
+        self.x += d.0;
+        self.y += d.1;
+    }
 }
 
 impl Display for Point {

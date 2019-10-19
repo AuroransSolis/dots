@@ -64,12 +64,32 @@ impl Direction {
     }
 
     #[inline]
-    pub fn set_out_false_mask(self) -> u8 {
+    pub fn set_out_f_mask(self) -> u8 {
         match self {
             Direction::V => 0b11101111,
             Direction::SP => 0b11011111,
             Direction::H => 0b10111111,
             Direction::SN => 0b01111111
+        }
+    }
+
+    #[inline]
+    pub fn set_inout_t_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b00010001,
+            Direction::SP => 0b00100010,
+            Direction::H => 0b01000100,
+            Direction::SN => 0b10001000
+        }
+    }
+
+    #[inline]
+    pub fn set_inout_f_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b11101110,
+            Direction::SP => 0b11011101,
+            Direction::H => 0b10111011,
+            Direction::SN => 0b01110111
         }
     }
 
@@ -90,6 +110,16 @@ impl Direction {
             Direction::SP => 0b00100000,
             Direction::H => 0b01000000,
             Direction::SN => 0b10000000
+        }
+    }
+
+    #[inline]
+    pub fn get_inout_mask(self) -> u8 {
+        match self {
+            Direction::V => 0b00010001,
+            Direction::SP => 0b00100010,
+            Direction::H => 0b01000100,
+            Direction::SN => 0b10001000
         }
     }
 
@@ -135,8 +165,8 @@ pub struct Set {
 }
 
 impl Set {
-    pub fn new(start: (i32, i32), direction: Direction, offset: i32) -> Self {
-        let (start_x, start_y) = start;
+    pub fn new(start: Point, direction: Direction, offset: i32) -> Self {
+        let Point { x: start_x, y: start_y } = start;
         let (step_x, step_y) = direction.opposite_single_step();
         start_x += step_x * offset;
         start_y += step_y * offset;
@@ -145,6 +175,10 @@ impl Set {
             start_y,
             direction
         }
+    }
+
+    pub fn start_point(&self) -> Point {
+        Point::new(self.start_x, self.y)
     }
 
     pub fn acceptable_overlap(&self, other: Set) -> bool {

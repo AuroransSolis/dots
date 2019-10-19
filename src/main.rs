@@ -38,8 +38,8 @@ fn base_highest_set(game: &Game, point: Point) -> Game {
     for direction in DirectionIter::new() {
         for offset in 0..5 {
             let set = Set::new(point, direction, offset);
-            print!("a");
-            if let Some(point) = game.valid_add_set(Set::new(point, direction, offset)) {
+            // print!("a");
+            if let Some((point, which)) = game.valid_add_set(Set::new(point, direction, offset)) {
                 game.add_set(set, point);
                 let num_possible_moves = game.possible_moves();
                 possible_moves.insert((num_possible_moves, set, point));

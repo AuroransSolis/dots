@@ -44,36 +44,25 @@ const STARTING_POINTS: [Point; 36] = [
 
 #[derive(Clone, Debug)]
 pub struct Game {
-    pub(crate) points: HashMap<Point, usize>,
-    pub(crate) use_flags: Vec<u8>,
+    pub(crate) points: HashMap<Point, u8>,
     pub(crate) sets: Vec<Set>
 }
 
 impl Game {
     pub fn new() -> Self {
-        let mut points = HashMap::with_capacity(STARTING_POINTS.len());
-        let mut use_flags = Vec::with_capacity(STARTING_POINTS.len());
+        let mut points = HashMap::new();
         for &point in STARTING_POINTS.iter() {
-            points.insert(point, use_flags.len());
-            use_flags.push(0);
+            points.insert(point, 0);
         }
         Game {
             points,
-            use_flags,
             sets: Vec::new()
         }
     }
 
     pub fn add_set(&mut self, set: Set, point: Point) {
         self.sets.push(set);
-        self.points.insert(point, self.use_flags.len());
-        self.use_flags.push(if point == set.start_point() {
-            set.direction.set_out_t_mask()
-        } else if point == set.end_point() {
-            set.direction.set_in_t_mask()
-        } else {
-            set.direction.set_inout_t_mask()
-        });
+        self.points.insert(point, 0);
         let masks = [
             set.direction.set_out_t_mask(),
             set.direction.set_inout_t_mask(),

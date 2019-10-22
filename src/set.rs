@@ -15,7 +15,7 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn single_step(&self) -> (i32, i32) {
+    pub fn single_step(&self) -> (i16, i16) {
         match self {
             Direction::H  => (1, 0),
             Direction::V  => (0, 1),
@@ -24,7 +24,7 @@ impl Direction {
         }
     }
 
-    pub fn opposite_single_step(&self) -> (i32, i32) {
+    pub fn opposite_single_step(&self) -> (i16, i16) {
         match self {
             Direction::H  => (-1, 0),
             Direction::V  => (0, -1),
@@ -126,13 +126,13 @@ impl Direction {
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
 pub struct Set {
-    pub(crate) start_x: i32,
-    pub(crate) start_y: i32,
+    pub(crate) start_x: i16,
+    pub(crate) start_y: i16,
     pub(crate) direction: Direction
 }
 
 impl Set {
-    pub fn new(start: Point, direction: Direction, offset: i32) -> Self {
+    pub fn new(start: Point, direction: Direction, offset: i16) -> Self {
         let Point { x: mut start_x, y: mut start_y } = start;
         let (step_x, step_y) = direction.opposite_single_step();
         start_x += step_x * offset;
@@ -151,10 +151,10 @@ impl Set {
 
 #[derive(Copy, Clone)]
 pub struct SetIter {
-    x: i32,
-    y: i32,
-    dx: i32,
-    dy: i32,
+    x: i16,
+    y: i16,
+    dx: i16,
+    dy: i16,
     step: u8
 }
 

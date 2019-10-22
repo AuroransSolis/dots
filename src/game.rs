@@ -1,8 +1,9 @@
-use super::DESIRED_SCORE;
+use crate::DESIRED_SCORE;
 use crate::extras::DirectionIter;
 use crate::point::Point;
 use crate::set::Set;
 use std::collections::{HashMap, HashSet};
+use ahash::AHashMap;
 
 const STARTING_POINTS: [Point; 36] = [
     Point { x:  0, y:  4 },
@@ -45,13 +46,19 @@ const STARTING_POINTS: [Point; 36] = [
 
 #[derive(Clone, Debug)]
 pub struct Game {
+    // pub(crate) points: BTreeMap<Point, u8>,
     pub(crate) points: HashMap<Point, u8>,
     pub(crate) sets: Vec<Set>
 }
 
 impl Game {
     pub fn new() -> Self {
-        let mut points = HashMap::with_capacity(DESIRED_SCORE + STARTING_POINTS.len());
+        // let mut points = BTreeMap::new();
+        let mut points = HashMap::with_capacity(STARTING_POINTS.len() + DESIRED_SCORE);
+        /*let mut points = HashMap::with_capacity_and_hasher(
+            STARTING_POINTS.len() + DESIRED_SCORE,
+
+        )*/
         for &point in STARTING_POINTS.iter() {
             points.insert(point, 0);
         }

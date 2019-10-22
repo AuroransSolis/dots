@@ -1,4 +1,5 @@
 extern crate rayon;
+extern crate ahash;
 
 use rayon::prelude::*;
 
@@ -12,21 +13,18 @@ mod set;
 use extras::DirectionIter;
 use game::Game;
 use set::Set;
-use crate::point::Point;
+use point::Point;
+use std::sync::{Arc, Mutex};
 
-const DESIRED_SCORE: usize = 58;
+const DESIRED_SCORE: usize = 60;
 
 fn main() {
     let game = Game::new();
     let try_best = game
         .points
         .par_iter()
-        // .iter()
         .map(|(&point, _)| base_highest_set(&game, point))
         .find_first(|game| game.score() >= DESIRED_SCORE);
-        // .collect::<Vec<Game>>();
-    // try_best.sort_unstable_by(|g1, g2| g1.score().cmp(&g2.score()));
-    // let try_best = try_best.pop();
     if let Some(best) = try_best {
         println!("Got: {}", best.score());
         println!("{:?}", best.sets);
@@ -38,24 +36,20 @@ fn main() {
 fn base_highest_set(game: &Game, point: Point) -> Game {
     let mut game = game.clone();
     // Collect unique possible moves in this hashset
-    let mut possible_moves = HashSet::new();
-    // println!("Base point: {}", point);
+    let mut possible_moves = HashSet::with_capacity(DESIRED_SCORE);
     for direction in DirectionIter::new() {
         for offset in 0..5 {
             let set = Set::new(point, direction, offset);
-            // println!("  Set: {:?}", set);
-            // print!("a");
             if let Some(point) = game.valid_add_set(Set::new(point, direction, offset)) {
                 game.add_set(set, point);
                 let num_possible_moves = game.possible_moves();
-                // println!("    Valid: {}", num_possible_moves);
                 possible_moves.insert((num_possible_moves, set, point));
                 game.remove_set(set, point);
             }
         }
     }
     // Collect into a vec to sort
-    let mut sorted_possible_moves = Vec::with_capacity(possible_moves.len());
+    let mut sorted_possible_moves = Vec::with_capacity(DESIRED_SCORE);
     for m in possible_moves.into_iter() {
         sorted_possible_moves.push(m);
     }
@@ -85,7 +79,6 @@ fn base_highest_set(game: &Game, point: Point) -> Game {
 fn branch_highest_set(game: &mut Game) -> bool {
     let mut possible_moves = HashSet::new();
     for (point, flags) in game.points.clone().into_iter() {
-        // println!("  Base point: {} ({:#010b})", point, flags);
         if flags == 255 {
             continue;
         }
@@ -97,11 +90,9 @@ fn branch_highest_set(game: &mut Game) -> bool {
             } else {
                 for offset in 0..5 {
                     let set = Set::new(point, direction, offset);
-                    // println!("    Set: {:?}", set);
                     if let Some(point) = game.valid_add_set(Set::new(point, direction, offset)) {
                         game.add_set(set, point);
                         let num_possible_moves = game.possible_moves();
-                        // println!("        Valid: {}", num_possible_moves);
                         possible_moves.insert((num_possible_moves, set, point));
                         game.remove_set(set, point);
                     }

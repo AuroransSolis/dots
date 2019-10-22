@@ -1,3 +1,4 @@
+use super::DESIRED_SCORE;
 use crate::extras::DirectionIter;
 use crate::point::Point;
 use crate::set::Set;
@@ -50,13 +51,13 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
-        let mut points = HashMap::new();
+        let mut points = HashMap::with_capacity(DESIRED_SCORE + STARTING_POINTS.len());
         for &point in STARTING_POINTS.iter() {
             points.insert(point, 0);
         }
         Game {
             points,
-            sets: Vec::new()
+            sets: Vec::with_capacity(DESIRED_SCORE)
         }
     }
 

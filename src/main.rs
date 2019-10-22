@@ -14,7 +14,7 @@ use game::Game;
 use set::Set;
 use crate::point::Point;
 
-const DESIRED_SCORE: usize = 50;
+const DESIRED_SCORE: usize = 58;
 
 fn main() {
     let game = Game::new();

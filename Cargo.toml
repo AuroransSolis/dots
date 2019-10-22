@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 rayon = "1.2.0"
+ahash = {version = "0.2.16", features = ["std"]}
 
 [profile.release]
 opt-level = 3

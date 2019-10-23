@@ -2,3 +2,6 @@
 **/*.rs.bk
 .idea
 Cargo.lock
+flamegraph.svg
+perf*
+run.log

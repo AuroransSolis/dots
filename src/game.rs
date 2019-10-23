@@ -1,9 +1,9 @@
-use crate::DESIRED_SCORE;
 use crate::extras::DirectionIter;
 use crate::point::Point;
 use crate::set::Set;
+use crate::DESIRED_SCORE;
+use ahash::{AHashMap, AHashSet};
 use std::collections::{HashMap, HashSet};
-use ahash::AHashMap;
 
 const STARTING_POINTS: [Point; 36] = [
     Point { x:  0, y:  4 },
@@ -46,19 +46,13 @@ const STARTING_POINTS: [Point; 36] = [
 
 #[derive(Clone, Debug)]
 pub struct Game {
-    // pub(crate) points: BTreeMap<Point, u8>,
-    pub(crate) points: HashMap<Point, u8>,
+    pub(crate) points: AHashMap<Point, u8>,
     pub(crate) sets: Vec<Set>
 }
 
 impl Game {
     pub fn new() -> Self {
-        // let mut points = BTreeMap::new();
-        let mut points = HashMap::with_capacity(STARTING_POINTS.len() + DESIRED_SCORE);
-        /*let mut points = HashMap::with_capacity_and_hasher(
-            STARTING_POINTS.len() + DESIRED_SCORE,
-
-        )*/
+        let mut points = AHashMap::with_capacity(STARTING_POINTS.len() + DESIRED_SCORE);
         for &point in STARTING_POINTS.iter() {
             points.insert(point, 0);
         }
@@ -137,19 +131,25 @@ impl Game {
     }
 
     pub fn possible_moves(&self) -> usize {
-        // println!("Possible moves");
-        // println!("  points: {}", self.points.len());
-        let mut moves = HashSet::new();
+        let mut moves: AHashSet<Set> = AHashSet::with_capacity(DESIRED_SCORE);
         for (&point, &flags) in self.points.iter() {
             // Point has a set in all directions
             if flags == 255 {
                 continue;
             }
-            // println!("  Point: {}", point);
             for direction in DirectionIter::new() {
-                for offset in 0..5 {
+                let (offset_lb, offset_ub) =
+                    if { (flags & direction.get_inout_mask()).count_ones() == 2 } {
+                        continue;
+                    } else if flags & direction.get_in_mask() > 0 {
+                        (0, 1)
+                    } else if flags & direction.get_out_mask() > 0 {
+                        (4, 5)
+                    } else {
+                        (0, 5)
+                    };
+                for offset in offset_lb..offset_ub {
                     let set = Set::new(point, direction, offset);
-                    // println!("    Set: {:?}", set);
                     if self.valid_add_set(set).is_some() {
                         moves.insert(set);
                     }

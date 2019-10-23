@@ -8,10 +8,12 @@ pub struct Point {
 }
 
 impl Point {
+    #[inline]
     pub fn new(x: i16, y: i16) -> Self {
         Point { x, y }
     }
 
+    #[inline]
     pub fn step(&mut self, d: (i16, i16)) {
         self.x += d.0;
         self.y += d.1;

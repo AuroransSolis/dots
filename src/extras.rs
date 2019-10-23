@@ -1,12 +1,7 @@
 use crate::set::Direction;
 use std::iter::Iterator;
 
-const DIRECTIONS: [Direction; 4] = [
-    Direction::V,
-    Direction::SP,
-    Direction::H,
-    Direction::SN
-];
+const DIRECTIONS: [Direction; 4] = [Direction::V, Direction::SP, Direction::H, Direction::SN];
 
 #[derive(Copy, Clone)]
 pub struct DirectionIter {
@@ -28,6 +23,7 @@ impl Iterator for DirectionIter {
 }
 
 impl DirectionIter {
+    #[inline]
     pub fn new() -> Self {
         DirectionIter { d: 0 }
     }

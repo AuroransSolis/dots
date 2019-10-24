@@ -20,7 +20,7 @@ impl Point {
     }
 
     #[inline]
-    fn packed(&self) -> i32 {
+    pub fn packed(&self) -> i32 {
         ((self.x as i32) << 16) + self.y as i32
     }
 }

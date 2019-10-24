@@ -1,21 +1,21 @@
 extern crate ahash;
+extern crate num_cpus;
 extern crate rayon;
-
-use rayon::prelude::*;
-
-use std::collections::HashSet;
 
 mod extras;
 mod game;
 mod point;
 mod set;
 
-use ahash::AHashSet;
+use ahash::{AHashSet, AHashMap};
 use extras::DirectionIter;
 use game::{Game, STARTING_POINTS};
 use point::Point;
+use rayon::prelude::*;
 use set::Set;
 use std::sync::{Arc, Mutex};
+use std::sync::mpsc::{channel, TryRecvError};
+use std::thread::spawn;
 
 const DESIRED_SCORE: usize = 85;
 
@@ -28,34 +28,69 @@ fn main() {
     // so that I can avoid going down a branch of recursion if I've already found all of its ends.
     // And from how my recursive algorithm works, if I encounter a complete set of moves again then
     // I know that I've already tried all of the remaining possibilities for that gamestate.
-    let mut gamestates = Arc::new(Mutex::new(vec![Vec::new(); DESIRED_SCORE]));
-    let try_best = STARTING_POINTS
-        // .iter()
+    // let gamestates = vec![Vec::new(); DESIRED_SCORE];
+    /*let try_best = STARTING_POINTS
         .par_iter()
-        .map(|&point| base_highest_set(&gamestates, Game::new(), point))
-        .find_first(|game| game.score() >= DESIRED_SCORE);
-    // .take_while(|game| game.score() <= DESIRED_SCORE)
-    // .next();
+        .map(|&point| base_highest_set(gamestates.clone(), Game::new(), point))
+        .find_first(|game| game.score() >= DESIRED_SCORE);*/
+    let (send, recv) = channel();
+    let starting_points = Arc::new(Mutex::new(STARTING_POINTS.iter().cloned()));
+    for i in 0..num_cpus::get() {
+        let mut t_gamestates = vec![Vec::new(); DESIRED_SCORE];;
+        let t_send = send.clone();
+        let t_starting_points = starting_points.clone();
+        spawn(move || {
+            loop {
+                let point = {
+                    let mut lock = t_starting_points
+                        .lock()
+                        .expect("Failed to get lock on starting points iterator.");
+                    lock.next()
+                };
+                if let Some(point) = point {
+                    t_send.send((
+                        base_highest_set(&mut t_gamestates,Game::new(), point),
+                        t_gamestates.clone()
+                    )).unwrap();
+                } else {
+                    break;
+                }
+            }
+        });
+        println!("Starting {}", i);
+    }
+    drop(send);
+    let mut try_best = None;
+    loop {
+        match recv.try_recv() {
+            Ok((game, gamestates)) => if game.score() >= DESIRED_SCORE {
+                try_best = Some(game);
+                let mut num_gamestates = 0;
+                for (i, gamestates_of_size_n) in gamestates.iter().enumerate() {
+                    println!("{}: {}", i + 1, gamestates_of_size_n.len());
+                    num_gamestates += gamestates_of_size_n.len();
+                }
+                println!("Total: {}", num_gamestates);
+                break;
+            } else {
+                continue;
+            },
+            Err(TryRecvError::Disconnected) => break,
+            _ => continue
+        }
+    }
     if let Some(best) = try_best {
         println!("Got: {}", best.score());
-        println!("{:?}", best.sets);
     } else {
         println!(":c");
     }
-    let mut num_gamestates = 0;
-    for (i, gamestates_of_size_n) in gamestates.iter().enumerate() {
-        println!("{}: {}", i + 1, gamestates_of_size_n.len());
-        num_gamestates += gamestates_of_size_n.len();
-    }
-    println!("Total: {}", num_gamestates);
 }
 
 fn base_highest_set(
-    gamestates: &Arc<Mutex<Vec<Vec<HashSet<Set>>>>>,
+    gamestates: &mut Vec<Vec<AHashSet<Set>>>,
     mut game: Game,
-    point: Point,
+    point: Point
 ) -> Game {
-    let gamestates = gamestates.clone();
     // Collect unique possible moves in this hashset
     let mut possible_moves: AHashSet<(usize, Set, Point)> = AHashSet::with_capacity(DESIRED_SCORE);
     let flags = *game.points.get(&point).expect("foo");
@@ -81,16 +116,19 @@ fn base_highest_set(
             let set = Set::new(point, direction, offset);
             if let Some(point) = game.valid_add_set(Set::new(point, direction, offset)) {
                 game.add_set(set, point);
-                if !gamestates
-                    .lock()
-                    .expect("Failed to get lock on gamestates.")[game.score() - 1]
+                if !gamestates[game.score() - 1]
                     .iter()
                     .any(|gs| v_hs_eq(&game.sets, gs))
                 {
+                    let mut new_gamestate = AHashSet::with_capacity(game.score());
+                    for &set in &game.sets {
+                        new_gamestate.insert(set);
+                    }
+                    gamestates[game.score() - 1].push(new_gamestate);
                     let num_possible_moves = game.possible_moves();
                     possible_moves.insert((num_possible_moves, set, point));
-                    game.remove_set(set, point);
                 }
+                game.remove_set(set, point);
             }
         }
     }
@@ -108,6 +146,9 @@ fn base_highest_set(
         // also don't have to worry about filtering the moves we've collected here since that's
         // already been done in the possible move collection loop.
         game.add_set(set, point);
+        if game.score() >= DESIRED_SCORE {
+            break;
+        }
         if branch_highest_set(gamestates, &mut game) {
             break;
         } else {
@@ -123,7 +164,7 @@ fn base_highest_set(
 // This thing is basically the same as the base function, except it takes a mutable reference to a
 // `Game` that it modifies, and returns a `bool` depending on whether it reached the target number
 // of moves. Literally identical otherwise.
-fn branch_highest_set(gamestates: Arc<Mutex<Vec<Vec<HashSet<Set>>>>>, game: &mut Game) -> bool {
+fn branch_highest_set(gamestates: &mut Vec<Vec<AHashSet<Set>>>, game: &mut Game) -> bool {
     let mut possible_moves: AHashSet<(usize, Set, Point)> = AHashSet::with_capacity(DESIRED_SCORE);
     for (point, flags) in game.points.clone().into_iter() {
         if flags == 255 {
@@ -143,16 +184,19 @@ fn branch_highest_set(gamestates: Arc<Mutex<Vec<Vec<HashSet<Set>>>>>, game: &mut
                 let set = Set::new(point, direction, offset);
                 if let Some(point) = game.valid_add_set(Set::new(point, direction, offset)) {
                     game.add_set(set, point);
-                    if !gamestates
-                        .lock()
-                        .expect("Failed to get lock on gamestates.")[game.score() - 1]
+                    if !gamestates[game.score() - 1]
                         .iter()
                         .any(|gs| v_hs_eq(&game.sets, gs))
                     {
+                        let mut new_gamestate = AHashSet::with_capacity(game.score());
+                        for &set in &game.sets {
+                            new_gamestate.insert(set);
+                        }
+                        gamestates[game.score() - 1].push(new_gamestate);
                         let num_possible_moves = game.possible_moves();
                         possible_moves.insert((num_possible_moves, set, point));
-                        game.remove_set(set, point);
                     }
+                    game.remove_set(set, point);
                 }
             }
         }
@@ -164,23 +208,10 @@ fn branch_highest_set(gamestates: Arc<Mutex<Vec<Vec<HashSet<Set>>>>>, game: &mut
     sorted_possible_moves.sort_unstable_by(|(m1, _, _), (m2, _, _)| m1.cmp(m2));
     for (_, set, point) in sorted_possible_moves.into_iter().rev() {
         game.add_set(set, point);
-        {
-            let lock = gamestates.lock().expect("Failed to get lock on gamestates.");
-            if !lock[game.score() - 1]
-                .iter()
-                .any(|gs| v_hs_eq(&game.sets, gs))
-            {
-                let mut gamestate = HashSet::with_capacity(game.score());
-                for &set in game.sets.iter() {
-                    gamestate.insert(set);
-                }
-                lock[game.score() - 1].push(gamestate);
-            }
-        }
         if game.score() >= DESIRED_SCORE {
             return true;
         }
-        if branch_highest_set(gamestates.clone(), game) {
+        if branch_highest_set(gamestates, game) {
             return true;
         } else {
             game.remove_set(set, point);
@@ -190,7 +221,7 @@ fn branch_highest_set(gamestates: Arc<Mutex<Vec<Vec<HashSet<Set>>>>>, game: &mut
     false
 }
 
-fn v_hs_eq(v: &Vec<Set>, hs: &HashSet<Set>) -> bool {
+fn v_hs_eq(v: &Vec<Set>, hs: &AHashSet<Set>) -> bool {
     if v.len() == hs.len() {
         for item in v.iter() {
             if !hs.contains(item) {

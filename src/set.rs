@@ -11,7 +11,7 @@ pub enum Direction {
     H,
     V,
     SP,
-    SN
+    SN,
 }
 
 impl Direction {
@@ -21,7 +21,7 @@ impl Direction {
             Direction::H => (1, 0),
             Direction::V => (0, 1),
             Direction::SP => (1, 1),
-            Direction::SN => (1, -1)
+            Direction::SN => (1, -1),
         }
     }
 
@@ -31,7 +31,7 @@ impl Direction {
             Direction::H => (4, 0),
             Direction::V => (0, 4),
             Direction::SP => (4, 4),
-            Direction::SN => (4, -4)
+            Direction::SN => (4, -4),
         }
     }
 
@@ -41,7 +41,7 @@ impl Direction {
             Direction::H => (-1, 0),
             Direction::V => (0, -1),
             Direction::SP => (-1, -1),
-            Direction::SN => (-1, 1)
+            Direction::SN => (-1, 1),
         }
     }
 
@@ -51,7 +51,7 @@ impl Direction {
             Direction::H => (-4, 0),
             Direction::V => (0, -4),
             Direction::SP => (-4, -4),
-            Direction::SN => (-4, 4)
+            Direction::SN => (-4, 4),
         }
     }
 
@@ -61,7 +61,7 @@ impl Direction {
             Direction::V => 0b00000001,
             Direction::SP => 0b00000010,
             Direction::H => 0b00000100,
-            Direction::SN => 0b00001000
+            Direction::SN => 0b00001000,
         }
     }
 
@@ -71,7 +71,7 @@ impl Direction {
             Direction::V => 0b11111110,
             Direction::SP => 0b11111101,
             Direction::H => 0b11111011,
-            Direction::SN => 0b11110111
+            Direction::SN => 0b11110111,
         }
     }
 
@@ -81,7 +81,7 @@ impl Direction {
             Direction::V => 0b00010000,
             Direction::SP => 0b00100000,
             Direction::H => 0b01000000,
-            Direction::SN => 0b10000000
+            Direction::SN => 0b10000000,
         }
     }
 
@@ -91,7 +91,7 @@ impl Direction {
             Direction::V => 0b11101111,
             Direction::SP => 0b11011111,
             Direction::H => 0b10111111,
-            Direction::SN => 0b01111111
+            Direction::SN => 0b01111111,
         }
     }
 
@@ -101,7 +101,7 @@ impl Direction {
             Direction::V => 0b00010001,
             Direction::SP => 0b00100010,
             Direction::H => 0b01000100,
-            Direction::SN => 0b10001000
+            Direction::SN => 0b10001000,
         }
     }
 
@@ -111,7 +111,7 @@ impl Direction {
             Direction::V => 0b11101110,
             Direction::SP => 0b11011101,
             Direction::H => 0b10111011,
-            Direction::SN => 0b01110111
+            Direction::SN => 0b01110111,
         }
     }
 
@@ -121,7 +121,7 @@ impl Direction {
             Direction::V => 0b00000001,
             Direction::SP => 0b00000010,
             Direction::H => 0b00000100,
-            Direction::SN => 0b00001000
+            Direction::SN => 0b00001000,
         }
     }
 
@@ -131,7 +131,7 @@ impl Direction {
             Direction::V => 0b00010000,
             Direction::SP => 0b00100000,
             Direction::H => 0b01000000,
-            Direction::SN => 0b10000000
+            Direction::SN => 0b10000000,
         }
     }
 
@@ -141,7 +141,7 @@ impl Direction {
             Direction::V => 0b00010001,
             Direction::SP => 0b00100010,
             Direction::H => 0b01000100,
-            Direction::SN => 0b10001000
+            Direction::SN => 0b10001000,
         }
     }
 }
@@ -150,14 +150,14 @@ impl Direction {
 pub struct Set {
     pub(crate) start_x: i16,
     pub(crate) start_y: i16,
-    pub(crate) direction: Direction
+    pub(crate) direction: Direction,
 }
 
 impl Set {
     pub fn new(start: Point, direction: Direction, offset: i16) -> Self {
         let Point {
             x: mut start_x,
-            y: mut start_y
+            y: mut start_y,
         } = start;
         let (step_x, step_y) = direction.opposite_single_step();
         start_x += step_x * offset;
@@ -165,7 +165,7 @@ impl Set {
         Set {
             start_x,
             start_y,
-            direction
+            direction,
         }
     }
 
@@ -180,7 +180,7 @@ pub struct SetIter {
     y: i16,
     dx: i16,
     dy: i16,
-    step: u8
+    step: u8,
 }
 
 impl Iterator for SetIter {

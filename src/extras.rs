@@ -5,7 +5,7 @@ const DIRECTIONS: [Direction; 4] = [Direction::V, Direction::SP, Direction::H, D
 
 #[derive(Copy, Clone)]
 pub struct DirectionIter {
-    d: u8
+    d: u8,
 }
 
 impl Iterator for DirectionIter {

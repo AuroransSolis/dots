@@ -4,7 +4,7 @@ use std::hash::{Hash, Hasher};
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct Point {
     pub(crate) x: i16,
-    pub(crate) y: i16
+    pub(crate) y: i16,
 }
 
 impl Point {

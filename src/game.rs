@@ -5,16 +5,16 @@ use crate::DESIRED_SCORE;
 use ahash::{AHashMap, AHashSet};
 use std::collections::{HashMap, HashSet};
 
-const STARTING_POINTS: [Point; 36] = [
-    Point { x:  0, y:  4 },
-    Point { x: -1, y:  4 },
-    Point { x: -1, y:  3 },
-    Point { x: -1, y:  2 },
-    Point { x: -1, y:  1 },
-    Point { x: -2, y:  1 },
-    Point { x: -3, y:  1 },
-    Point { x: -4, y:  1 },
-    Point { x: -4, y:  0 },
+pub const STARTING_POINTS: [Point; 36] = [
+    Point { x: 0, y: 4 },
+    Point { x: -1, y: 4 },
+    Point { x: -1, y: 3 },
+    Point { x: -1, y: 2 },
+    Point { x: -1, y: 1 },
+    Point { x: -2, y: 1 },
+    Point { x: -3, y: 1 },
+    Point { x: -4, y: 1 },
+    Point { x: -4, y: 0 },
     Point { x: -4, y: -1 },
     Point { x: -4, y: -2 },
     Point { x: -3, y: -2 },
@@ -23,31 +23,31 @@ const STARTING_POINTS: [Point; 36] = [
     Point { x: -1, y: -3 },
     Point { x: -1, y: -4 },
     Point { x: -1, y: -5 },
-    Point { x:  0, y: -5 },
-    Point { x:  1, y: -5 },
-    Point { x:  2, y: -5 },
-    Point { x:  2, y: -4 },
-    Point { x:  2, y: -3 },
-    Point { x:  2, y: -2 },
-    Point { x:  3, y: -2 },
-    Point { x:  4, y: -2 },
-    Point { x:  5, y: -2 },
-    Point { x:  5, y: -1 },
-    Point { x:  5, y:  0 },
-    Point { x:  5, y:  1 },
-    Point { x:  4, y:  1 },
-    Point { x:  3, y:  1 },
-    Point { x:  2, y:  1 },
-    Point { x:  2, y:  2 },
-    Point { x:  2, y:  3 },
-    Point { x:  2, y:  4 },
-    Point { x:  1, y:  4 }
+    Point { x: 0, y: -5 },
+    Point { x: 1, y: -5 },
+    Point { x: 2, y: -5 },
+    Point { x: 2, y: -4 },
+    Point { x: 2, y: -3 },
+    Point { x: 2, y: -2 },
+    Point { x: 3, y: -2 },
+    Point { x: 4, y: -2 },
+    Point { x: 5, y: -2 },
+    Point { x: 5, y: -1 },
+    Point { x: 5, y: 0 },
+    Point { x: 5, y: 1 },
+    Point { x: 4, y: 1 },
+    Point { x: 3, y: 1 },
+    Point { x: 2, y: 1 },
+    Point { x: 2, y: 2 },
+    Point { x: 2, y: 3 },
+    Point { x: 2, y: 4 },
+    Point { x: 1, y: 4 },
 ];
 
 #[derive(Clone, Debug)]
 pub struct Game {
     pub(crate) points: AHashMap<Point, u8>,
-    pub(crate) sets: Vec<Set>
+    pub(crate) sets: Vec<Set>,
 }
 
 impl Game {
@@ -58,7 +58,7 @@ impl Game {
         }
         Game {
             points,
-            sets: Vec::with_capacity(DESIRED_SCORE)
+            sets: Vec::with_capacity(DESIRED_SCORE),
         }
     }
 
@@ -70,14 +70,14 @@ impl Game {
             set.direction.set_inout_t_mask(),
             set.direction.set_inout_t_mask(),
             set.direction.set_inout_t_mask(),
-            set.direction.set_in_t_mask()
+            set.direction.set_in_t_mask(),
         ];
-        let mut point = set.start_point();
+        let mut set_point = set.start_point();
         let step = set.direction.single_step();
         for i in 0..5 {
-            let flags = self.points.get_mut(&point).unwrap();
+            let flags = self.points.get_mut(&set_point).unwrap();
             *flags = *flags | masks[i];
-            point.step(step);
+            set_point.step(step);
         }
     }
 
@@ -89,17 +89,15 @@ impl Game {
             set.direction.set_inout_f_mask(),
             set.direction.set_inout_f_mask(),
             set.direction.set_inout_f_mask(),
-            set.direction.set_in_f_mask()
+            set.direction.set_in_f_mask(),
         ];
         let mut set_point = set.start_point();
         let step = set.direction.single_step();
         for i in 0..5 {
-            if point == set_point {
-                set_point.step(step);
-                continue;
+            if point != set_point {
+                let flags = self.points.get_mut(&set_point).unwrap();
+                *flags = *flags & masks[i];
             }
-            let flags = self.points.get_mut(&set_point).unwrap();
-            *flags = *flags & masks[i];
             set_point.step(step);
         }
     }
@@ -113,7 +111,7 @@ impl Game {
             test.direction.get_inout_mask(),
             test.direction.get_inout_mask(),
             test.direction.get_inout_mask(),
-            test.direction.get_in_mask()
+            test.direction.get_in_mask(),
         ];
         for &mask in masks.iter() {
             if let Some(&flags) = self.points.get(&point) {
@@ -139,7 +137,7 @@ impl Game {
             }
             for direction in DirectionIter::new() {
                 let (offset_lb, offset_ub) =
-                    if { (flags & direction.get_inout_mask()).count_ones() == 2 } {
+                    if (flags & direction.get_inout_mask()).count_ones() == 2 {
                         continue;
                     } else if flags & direction.get_in_mask() > 0 {
                         (0, 1)

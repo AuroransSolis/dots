@@ -1,4 +1,5 @@
 use crate::point::Point;
+use std::hash::{Hash, Hasher};
 use std::iter::Iterator;
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
@@ -146,7 +147,7 @@ impl Direction {
     }
 }
 
-#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct Set {
     pub(crate) start_x: i16,
     pub(crate) start_y: i16,
@@ -171,6 +172,14 @@ impl Set {
 
     pub fn start_point(&self) -> Point {
         Point::new(self.start_x, self.start_y)
+    }
+}
+
+impl Hash for Set {
+    fn hash<H: Hasher>(&self, h: &mut H) {
+        h.write_i64({
+            ((self.direction.set_in_t_mask() as i64) << 32) + self.start_point().packed() as i64
+        });
     }
 }
 

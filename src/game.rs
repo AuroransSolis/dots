@@ -3,7 +3,6 @@ use crate::point::Point;
 use crate::set::Set;
 use crate::DESIRED_SCORE;
 use ahash::{AHashMap, AHashSet};
-use std::collections::{HashMap, HashSet};
 
 pub const STARTING_POINTS: [Point; 36] = [
     Point { x: 0, y: 4 },

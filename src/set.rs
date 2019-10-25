@@ -1,4 +1,5 @@
 use crate::point::Point;
+use std::fmt::{self, Display};
 use std::hash::{Hash, Hasher};
 use std::iter::Iterator;
 
@@ -176,6 +177,14 @@ impl Set {
 
     pub fn packed(&self) -> i64 {
         self.start_point().packed() as i64 + ((self.direction.set_in_t_mask() as i64) << 32)
+    }
+}
+
+impl Display for Set {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut end = self.start_point();
+        end.step(self.direction.full_step());
+        write!(f, "{} -> {}", self.start_point(), end)
     }
 }
 

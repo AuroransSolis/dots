@@ -173,6 +173,10 @@ impl Set {
     pub fn start_point(&self) -> Point {
         Point::new(self.start_x, self.start_y)
     }
+
+    pub fn packed(&self) -> i64 {
+        self.start_point().packed() as i64 + ((self.direction.set_in_t_mask() as i64) << 32)
+    }
 }
 
 impl Hash for Set {

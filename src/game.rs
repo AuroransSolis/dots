@@ -80,6 +80,10 @@ impl Game {
         }
     }
 
+    pub fn add_set_nomod_flags(&mut self, set: Set) {
+        self.sets.push(set);
+    }
+
     pub fn remove_set(&mut self, set: Set, point: Point) {
         self.sets.pop();
         self.points.remove(&point);
@@ -99,6 +103,10 @@ impl Game {
             }
             set_point.step(step);
         }
+    }
+
+    pub fn remove_set_nomod_flags(&mut self) {
+        self.sets.pop();
     }
 
     pub fn valid_add_set(&self, test: Set) -> Option<Point> {

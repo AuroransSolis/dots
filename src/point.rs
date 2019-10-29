@@ -23,6 +23,16 @@ impl Point {
     pub fn packed(&self) -> i32 {
         ((self.x as i32) << 16) + self.y as i32
     }
+
+    #[inline]
+    pub fn quadrant(&self) -> u8 {
+        match (self.x > 0, self.y >= 0) {
+            (true, true) => 0,
+            (false, true) => 1,
+            (false, false) => 2,
+            (true, false) => 3
+        }
+    }
 }
 
 impl Hash for Point {

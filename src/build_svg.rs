@@ -12,7 +12,6 @@ pub fn display_game_as_svg(filename: &str, game: &Game) {
 	// Using viewBox default from Inkscape on my machine.
 	let mut document = Document::new()
 		.set("viewBox", (0, 0, 210, 297));
-	println!("Created document with viewBox");
 	for point in game.points.keys() {
 		let circle = Circle::new()
 			.set("cx", point.x as i32 * SPACING)
@@ -21,7 +20,6 @@ pub fn display_game_as_svg(filename: &str, game: &Game) {
 			.set("fill", "black");
 		document = document.add(circle);
 	}
-	println!("Added points to document.");
 	for set in game.sets.iter() {
 		let (x, y) = set.direction.full_step();
 		let (x, y) = (x as i32, y as i32);
@@ -34,6 +32,5 @@ pub fn display_game_as_svg(filename: &str, game: &Game) {
 			.set("stroke", "black");
 		document = document.add(line);
 	}
-	println!("Added lines to document.");
 	svg::save(filename, &document).expect("Failed to save SVG document.");
 }

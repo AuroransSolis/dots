@@ -26,7 +26,7 @@ use methods::{
 };
 use solvers::multithreaded_method;
 
-pub const DESIRED_SCORE: usize = 85;
+pub const DESIRED_SCORE: usize = 60;
 
 fn main() {
     let method = Method::new(v_hs_eq, store_hs, store_npm_s_p, cmp_hpm, spm_intoiter_rev);

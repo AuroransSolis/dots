@@ -1,7 +1,4 @@
-extern crate ahash;
-extern crate num_cpus;
-extern crate rayon;
-
+mod build_svg;
 mod extras;
 mod game;
 mod methods;
@@ -9,6 +6,7 @@ mod point;
 mod set;
 mod solvers;
 
+use build_svg::display_game_as_svg;
 use game::{Game, STARTING_POINTS};
 use methods::{
     base,
@@ -28,7 +26,7 @@ use methods::{
 };
 use solvers::multithreaded_method;
 
-pub const DESIRED_SCORE: usize = 60;
+pub const DESIRED_SCORE: usize = 85;
 
 fn main() {
     let method = Method::new(v_hs_eq, store_hs, store_npm_s_p, cmp_hpm, spm_intoiter_rev);
@@ -38,6 +36,8 @@ fn main() {
         for set in best.sets.iter() {
             println!("{}", set);
         }
+        let filename = format!("game-{}.svg", best.score());
+        display_game_as_svg(&filename, &best);
     } else {
         println!(":c");
     }

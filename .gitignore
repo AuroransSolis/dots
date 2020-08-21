@@ -2,6 +2,7 @@
 **/*.rs.bk
 .idea
 Cargo.lock
-flamegraph.svg
+*.svg
 perf*
 run.log
+.vscode/
